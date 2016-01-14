@@ -1,0 +1,213 @@
+
+	APPELS DE FONCTIONS
+       ---------------------
+ - Adresse de retour dans registre
+   	   S: pas d'imbrication de fonction.
+
+ - Fonctions récursives.
+   	   * Valeurs registres perdues.
+
+ - Déclarations de fonctions imbriquées
+   		
+
+		Appelant f
+		Appelé g
+
+
+ 1) f évalue les args 
+ 2) f stocke E A. (Enregistrement d'activation)
+ 3) g sauve les valeurs des registres
+ 4) g commence 
+
+
+
+
+
+    RETOUR
+ 1) g valeur de retour 
+ 2) g dépile et se branche à l'adresse de retour de f
+ 3) f copie dans le E.A la valeur de retour.
+
+
+
+ DIFFICULTES avec arbres de code intermédiare:
+ 1) Appels de fonctions 
+ 2) ESEQ
+ 3) CJUMP
+
+
+
+					________________________________________________________________________________ 
+ 									
+									CODE A 3 ADRESSES:
+					
+					________________________________________________________________________________				
+		
+
+- x = y op z                   op . opération arithmétique ou logique
+- x = op y
+- x = y				APPELS DE PROCEDURES
+- JUMP L			       - PARAM x
+- LABEL L			       - CALL p,n appel de p avec n param
+- IF x OP y JUMP l		       - RETURN y
+- x = y (i)
+- x(i) = y
+- x = &y
+- x = *y
+- *x = y
+
+
+
+
+  Code à 3 adresse Structure(
+       - Code.       Adresse
+       - 1er reg     - Registre
+       - 2e reg      - Constante
+       - 3 reg       - offset/level
+ )
+
+
+
+  Bloc
+  ----
+   Une  suite d'instructions 
+   	* Première est Label ou Première de toutes les instructions 
+	* Dernière est JUMP ou IF ... JUMP  ou dernière de toutes 
+	* qui ne contient pas de JUMP ou IF ... JUMP ni d'autres Labels que le premier
+
+  Toute séquence de blocs va définir un graphe de flot de contrôle.   
+   Variable vivante à l'entrée ou à la sortie d'un bloc 
+   variable vivante à la sortie d'un bloc s'il existe un 
+   bloc atteignable où elle est utilisée.
+ 		    	     	    
+				     	       	       	 EX de code à 3 adresse      a=0
+										     Label 1
+										     b=a+1
+										     c = c+b
+										     IF a<3 goto 1
+										     Label 2
+										     PARAM c
+										     CALL print ,1
+
+
+									**********************************
+									DEFINITIONS DES BLOCS POUR L'EXEMPLE
+									
+
+									B0 --------------------
+									    a=0					vivant a,c
+									   --------------------
+
+									B1 --------------------                 vivant a,c 
+	   									     Label 1
+										     b=a+1
+										     c = c+b
+										     IF a<3 goto 1
+
+									   --------------------
+	
+									B2 --------------------
+									    Label 2
+									    PARAM 
+									    CALL print ,1
+
+									   --------------------
+
+
+
+
+  SCHEMA DE FONCTIONNEMENT (EXECUTION)									   
+      B0 ------> B1 --------> B2
+      	 	 ^_____________!            
+
+
+
+
+   ***************************************
+
+		DEFINITIONS
+
+   ***************************************
+
+
+  Variable utilisée : figure * à droite d'une affection 
+  	   	      	     * dans param, return ou if avant de figurer à gauche dans le même bloc.
+			       EX c utilisée mais b non.
+
+  Variable définie : figure à gauhe d'une affectation.
+
+
+
+   ***************************************
+
+		ALGORITHME
+
+   ***************************************
+
+   a) Pour chaque block B, renseigner les ensembles Utilisée (Bi), Def(Bi)
+
+   b) In(Bi) = ensemble vide
+      out(Bi) = ensemble vide
+
+   c) Appliquer les équations suivantes: 
+      tant qu'elles modifient In(Bi) Out(Bi)
+      	   
+	   - Out(Bi) = Union In(Bj)  avec Bj successeur de Bi.
+	   - In(Bi) = Utilisée(Bi) U (Out(Bi) - Def(Bi))
+
+
+	       _
+	      ! t1=a
+	   B1 ! t2=b
+	      !_
+	       _
+	      ! Label L2
+	   B2 ! t3 = a+b
+	      ! if(t1<t2) goto L4
+	      !_
+	       _
+	      ! Label L3
+	   B3 ! t2= t2+b
+	      ! t3=t3+c
+	      ! if(t2>t3) goto L5 else goto L2
+	      !_
+	       _
+	      ! Label L4
+	   B4 ! t4= t3*t3
+	      ! t1= t4+t3
+	      ! goto L1
+	      !_
+	       _
+	      ! Label L5
+	   B5 ! Print (t1,t2,t3)
+	      !_
+
+		  !	      !			 !
+		  !   USE     !     DEF 	 !        In		!       Out
+	      ____!___________!__________________!______________________!________________________!
+	      B1  ! a,b       !    t1,t2         !      a,b  *c*        !    a,b,t1,t2   *c*     !
+	      -----------------------------------------------------------------------------------
+	      B2  ! a,b,t1,t2 !   t3             !   a,b,t1,t2  *c*     ! t2,b,t3,c    *a,b,t1*  !
+	      -----------------------------------------------------------------------------------
+	      B3  ! t2,b,t3,c !   t2,t3          !   a,b,t1,t2  *a,t1*  ! a,b,t1,t2,t3    *c*    !
+	      ------------------------------------------------------------------------------------
+	      B4  ! t3        !   t1,t4          !   t3     *a,b,c*     ! a,b    *c*             !
+	      ------------------------------------------------------------------------------------
+	      B5  ! t1,t2,t3  !   ( )            !   t1,t2,t3           !        ()              !
+	      ------------------------------------------------------------------------------------
+	      
+
+	      GRAPHE DE BRANCHEMENT
+	      	     
+					
+			    :-----------------------------:						   
+		            :->B1 ---> B2 <----> B3 ---> B4
+				   	   	 :---> B5
+
+						 le block B4 peut être supprimé pour des raisons d'optimisation.
+
+
+
+
+	
+suite optimisation des boucles

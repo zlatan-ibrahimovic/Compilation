@@ -1,0 +1,327 @@
+import java_cup.runtime.*;
+import java.io.*;
+import java.lang.*;
+import stree.*;
+import type.*;
+import evn.*;
+import ICode.*;
+
+parser code {: 
+    public void report_error(String message, Object info) {
+        StringBuffer msg = new StringBuffer("error");
+        if (info instanceof Symbol) {
+            Symbol s = (Symbol) info;
+            msg.append(" in line ");
+            msg.append(s.left);
+        }
+        msg.append(": ");
+        msg.append(message);
+        System.err.println(msg);
+    }
+
+    public void report_error(String message) {
+        StringBuffer msg = new StringBuffer("error");
+        System.err.println(msg);
+    }
+
+    public void report_error(String message, int line) {
+        StringBuffer msg = new StringBuffer("error in line ");
+        msg.append(line);
+        msg.append(": ");
+        msg.append(message);
+        System.err.println(msg);
+    }
+
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+		  throw new RuntimeException("Fatal Syntax Error");
+    }
+
+    public void syntax_error(Symbol cur_token) {
+        StringBuffer msg = new StringBuffer("syntax error in ");
+        msg.append((Integer.valueOf(cur_token.left + 1))+"("+cur_token.right+")");
+        System.err.println(msg);
+    }
+
+    public void syntax_error(int line, int column) {
+        StringBuffer msg = new StringBuffer("syntax error in ");
+        msg.append((Integer.valueOf(line+1))+"("+column+")");
+        System.err.println(msg);
+    }
+
+:}
+
+init with {::}
+
+terminal 
+	FUNCTION_CALL,ARROW_MEMORYACCESS,POINT_MEMORYACCESS,DOUBLE_BRACKET,
+	LA,RA,LPAR,RPAR,LBRACKET,RBRACKET,ANDBIT_OR_MEMORYACCESS,OR_BIT,AND,
+	NOT_UNARY,LSHIFT,RSHIFT,OR,NOT,LT,GT,LE,GE,DIFF,EQ,EQEQ,PLUS_EQ,AFFECT,
+	MINUS_EQ,MULT_EQ,DIV_EQ,MOD_EQ,PLUS,INCR,DECR,MINUS,MULT_OR_MEMORYACCESS,
+	DIV,MOD,SEMIC,DOUBLE_POINTS,VARIABLE_TYPE,INTEGER_TYPE,STRING_TYPE,FLOAT_TYPE,
+	BOOLEAN_TYPE,CHARACTER_TYPE,POINTER_OR_XOR,FOREACH,IN,CLASS,RETURN,
+	IF,ELSE,WHILE,CONSTANTS,LIST,STRUCTURE,TYPE,RECORD,COMMA,FUNCTION,
+	REPEAT,PROCEDURE,MAIN,STATIC;
+
+terminal String IDENTIFIER, CHARACTER_LITERAL, STRING_LITERAL;
+terminal Integer INTEGER_LITERAL;
+terminal Float FLOAT_LITERAL;
+terminal Boolean BOOLEAN_LITERAL;
+
+non terminal Stree class,axiom;
+non terminal Stree stms,stm,startI,insts,inst,declar,declar_complex,list_args,
+				 declar_type,set_of_declars,literal,accoo,accof,
+				 type,type_pointer,type_pointer_simple,variable,
+			    type_variable,type_list,type_structure,list_litteral,expr,exprs,
+   			 declar_simple,conditional_without_else,conditional_stm,boolean_expr,op_boolean,
+				 conditional_with_else,while_stm,foreach_stm,list_declaration,function_call,
+				 functioncall_without_args,functioncall_with_args,class_declaration,constructor,
+				 destructor,type_simple,function_declaration,return_stm,affectation_variable,repeat_stm,
+				 main_function,functiondeclar_without_args,functiondeclar_with_args,unary_expr;
+
+
+precedence nonassoc ELSE;
+precedence left MULT_EQ,MINUS_EQ,PLUS_EQ,DIV_EQ,MOD_EQ;
+precedence left ANDBIT_OR_MEMORYACCESS;
+precedence left OR,AND;
+precedence left LT, GT, LE, GE, EQEQ, DIFF;
+precedence left LSHIFT,RSHIFT;
+precedence left PLUS, MINUS;
+precedence left MULT_OR_MEMORYACCESS, DIV, MOD;
+precedence right INCR,DECR;
+
+start with axiom;
+
+axiom::= startI insts:e {:RESULT=e;:};
+
+startI ::= {:
+				Main.currentEnv=new Env();
+			:};
+
+class ::= CLASS IDENTIFIER:i LA stms:s RA {:RESULT=new StreeCLASS(i,s);:}
+		  ;
+
+stms ::= stm:s1 stms:s2 {:RESULT=new StreeSUCC(s1,s2);:}
+		|stm:e {:RESULT=e;:}
+		;
+
+stm ::=  main_function:e {:RESULT=e;:}
+		|function_declaration:e {:RESULT=e;:}
+		|constructor:e {:RESULT=e;:}
+		|destructor:e {:RESULT=e;:}
+		;
+
+inst ::= expr:e SEMIC  {:RESULT=e;:}
+		 |declar:e {:RESULT=e;:}
+		 |conditional_stm:e {:RESULT=e;:}
+		 |while_stm:e {:RESULT=e;:}
+		 |foreach_stm:e {:RESULT=e;:}
+		 |repeat_stm:e {:RESULT=e;:}
+		 |function_call:e {:RESULT=e;:}		
+		 |return_stm:e {:RESULT=e;:}
+		 |affectation_variable:e {:RESULT=e;:}
+         ;
+
+insts ::= inst:e1 insts:e2 {:RESULT=new StreeSUCC(e1,e2);:}
+		  |inst:e {:RESULT=e;:}
+		  ;
+
+conditional_stm ::= conditional_without_else:e {:RESULT=e;:}
+					|conditional_with_else:e {:RESULT=e;:}
+				    ;
+
+conditional_without_else ::= IF LPAR expr:e RPAR accoo insts:s accof {:RESULT=new StreeIF(e,s,Main.currentEnv);:}
+					 		 ;
+
+conditional_with_else ::= IF LPAR expr:e RPAR accoo insts:s1 accof ELSE accoo insts:s2 accof {:RESULT=new StreeIF(e,new StreeTHENELSE(s1,s2),Main.currentEnv);:}
+						  			;
+		
+accoo ::=LA {:      
+					Env n=new Env(Main.currentEnv);
+					if(Main.firstEnv==null){
+						Main.firstEnv=n;
+						Main.currentEnv=n;					
+					}else{
+						Main.currentEnv.putNext(n);
+						Main.currentEnv=n;
+					}					
+					:}
+				;
+
+accof ::=RA {::};
+
+foreach_stm ::= FOREACH variable:i IN expr:e LA insts:s RA {:RESULT=new StreeFOREACH(new StreeFOREACHHEADER(i,e),s);:}
+				;
+
+while_stm ::= WHILE LPAR expr:e RPAR LA insts:s RA {:RESULT=new StreeWHILE(e,s);:}
+			  ;
+
+repeat_stm ::= REPEAT LA stms:s RA WHILE LPAR insts:e RPAR {:RESULT=new StreeREPEATWHILE(s,e);:}
+			   ;
+
+affectation_variable ::= variable:v EQ expr:e SEMIC {:RESULT = new StreeAFF(v, e,Main.currentEnv);:}
+						 |variable:v EQ DOUBLE_BRACKET SEMIC {:RESULT=new StreeAFF(v,new StreeARRAY(),Main.currentEnv);:}
+						 |variable:v EQ LBRACKET exprs:e RBRACKET SEMIC {:RESULT=new StreeAFF(v,new StreeARRAY(e),Main.currentEnv);:}
+						 ;
+
+expr ::= 	expr:e1 PLUS expr:e2  {:RESULT=new StreePLUS(e1,e2,Main.currentEnv);:}
+			|expr:e1 MULT_OR_MEMORYACCESS expr:e2 {:RESULT=new StreeMULT(e1,e2,Main.currentEnv);:}
+			|expr:e1 DIV expr:e2 {:RESULT=new StreeDIV(e1,e2,Main.currentEnv);:}
+			|expr:e1 MINUS expr:e2 {:RESULT=new StreeMINUS(e1,e2,Main.currentEnv);:} 
+			|expr:e1 MOD expr:e2 {:RESULT=new StreeMOD(e1,e2);:}
+			|expr:e1 LT expr:e2 {:RESULT=new StreeLT(e1,e2,Main.currentEnv);:}
+			|expr:e1 GT expr:e2 {:RESULT=new StreeGT(e1,e2,Main.currentEnv);:}
+			|expr:e1 LE expr:e2 {:RESULT=new StreeLE(e1,e2,Main.currentEnv);:}
+			|expr:e1 GE expr:e2 {:RESULT=new StreeGE(e1,e2,Main.currentEnv);:}
+			|expr:e1 DIFF expr:e2 {:RESULT=new StreeDIFF(e1,e2,Main.currentEnv);:}
+			|expr:e1 EQEQ expr:e2 {:RESULT=new StreeEQ(e1,e2,Main.currentEnv);:}
+			|expr:e1 LSHIFT expr:e2  {:RESULT=new StreeLSHIFT(e1,e2);:}
+			|expr:e1 RSHIFT expr:e2  {:RESULT=new StreeRSHIFT(e1,e2);:}
+			|expr:e1 AND expr:e2 {:RESULT=new StreeAND(e1,e2,Main.currentEnv);:}
+			|expr:e1 OR expr:e2 {:RESULT=new StreeOR(e1,e2,Main.currentEnv);:}
+			|expr:e1 PLUS_EQ expr:e2 {:RESULT=new StreePLUS_EQ(e1,e2);:}
+			|expr:e1 MINUS_EQ expr:e2 {:RESULT=new StreeMINUS_EQ(e1,e2);:}
+			|expr:e1 MULT_EQ expr:e2 {:RESULT=new StreeMULT_EQ(e1,e2);:}
+			|expr:e1 DIV_EQ expr:e2 {:RESULT=new StreeDIV_EQ(e1,e2);:}
+			|expr:e1 MOD_EQ expr:e2 {:RESULT=new StreeMOD_EQ(e1,e2);:}
+			|INCR expr:e {:RESULT=new StreeINCR(e);:}
+			|DECR expr:e {:RESULT=new StreeDECR(e);:}
+			|LPAR expr:e RPAR	{:RESULT=e;:}
+			|literal:e {:RESULT=e;:}
+			;
+
+exprs ::= expr:e1 COMMA exprs:e2 {:RESULT=new StreeExps(e1,e2);:} 
+		  |expr:e {:RESULT=e;:}
+		  ;
+
+declar ::= declar_complex:e SEMIC {:RESULT=e;:}
+		   |declar_simple:e SEMIC {:RESULT=e;:}
+		   |declar_type:e SEMIC {:RESULT=e;:}
+		   ;
+
+declar_simple ::= variable:i DOUBLE_POINTS type_simple:e  {: RESULT=new StreeVARIABLEDECLAR(i,e);
+																				 EnumType t=e.getEnumType();
+																				 if(Main.globaleEnv == false && Main.firstEnv==null){
+																					Env n = new Env(Main.currentEnv);
+																				//	n.add((String)i.getObject(),new Type(EnumType.INT));
+																					Main.firstEnv=n;
+																					Main.globaleEnv=true;
+																					Main.currentEnv=n;
+																				 }else{
+																					Env n=Main.currentEnv;
+																				//	n.add((String)i.getObject(),new Type(EnumType.INT));
+																			      Main.currentEnv=n;
+																				 }
+																				 Main.currentEnv.add((String)i.getObject(),new Type(t));
+																			:}
+				  |variable:i DOUBLE_POINTS type_list:e  {: RESULT=new StreeVARIABLEDECLAR(i,e);:}
+				  |variable:i DOUBLE_POINTS type_pointer:e  {: RESULT=new StreeVARIABLEDECLAR(i,e);:}
+				  ;
+
+type_simple ::=
+				INTEGER_TYPE:e  {:RESULT=new StreeINTEGER();:}
+ 				|STRING_TYPE:e {:RESULT=new StreeSTRING();:}
+				|FLOAT_TYPE:e {:RESULT=new StreeFLOAT();:}
+				|CHARACTER_TYPE:e {:RESULT=new StreeCHARACTER();:}
+				|BOOLEAN_TYPE:e {:RESULT=new StreeBOOLEAN();:} 
+				;
+
+type_pointer ::=
+				POINTER_OR_XOR type_simple:e {: RESULT=new StreePOINTERTYPE(e);:}
+				;
+
+literal ::=
+			CHARACTER_LITERAL:c {:RESULT = new StreeCHARACTER(c); :}
+			|INTEGER_LITERAL:i {:RESULT = new StreeINTEGER(i); :}
+			|FLOAT_LITERAL:f {:RESULT = new StreeFLOAT(f); :}
+			|IDENTIFIER:str {:RESULT = new StreeIDENTIFIER(str,str); :}
+			|BOOLEAN_LITERAL:b {:RESULT = new StreeBOOLEAN(b); :}
+			;
+
+type_list ::=
+			  LIST type_simple:e {:RESULT=new StreeLISTOF(e);:}
+			  |LIST variable:e {:RESULT=new StreeLISTOF(e);:}
+			  ;
+
+declar_complex ::= variable:i DOUBLE_POINTS LIST STRUCTURE LA set_of_declars:s RA {:RESULT=new StreeLISTOF(new StreeSTRUCTURE(i,s));:}
+				   ;
+
+declar_type ::= TYPE variable:i EQ STRUCTURE LA set_of_declars:s RA {:RESULT=new StreeSTRUCTURE(i,s);:}
+				;
+
+set_of_declars ::= declar_simple:i1 SEMIC set_of_declars:i2 {:RESULT=new StreeSUCC(i1,i2);:}
+				   |declar_simple:i SEMIC {:RESULT=i;:}
+				   ;		
+
+variable ::= IDENTIFIER:i {:RESULT=new StreeIDENTIFIER(i,i);:}
+			 ;
+
+list_args ::= declar_simple:e {:RESULT=new StreeFUNCTIONARGS(e);:}
+			  |declar_simple:e1 COMMA list_args:e2 {:RESULT=new StreeFUNCTIONARGS(e1,e2);:}
+			   ;
+
+function_declaration ::= functiondeclar_without_args:e {:RESULT=e;:}
+						 |functiondeclar_with_args:e {:RESULT=e;:}
+				         ;									
+
+functiondeclar_without_args ::= FUNCTION variable:i FUNCTION_CALL DOUBLE_POINTS type_simple:t LA insts:s RA {:RESULT=new StreeFUNCTIONDECLAR(new StreeFUNCTIONHEADER(i,t),new StreeFUNCTIONBODY(s),i);:}
+								;
+
+functiondeclar_with_args ::= FUNCTION variable:i LPAR list_args:e1 RPAR DOUBLE_POINTS type_simple:t LA insts:s RA {:RESULT=new StreeFUNCTIONDECLAR(new StreeFUNCTIONHEADER(e1,t),new StreeFUNCTIONBODY(s),i);:}
+
+							 ;
+	
+return_stm ::= RETURN expr:e SEMIC {:RESULT=new StreeRETURN(e);:}
+			   ;	
+
+constructor ::= IDENTIFIER:i FUNCTION_CALL LA insts:s RA {:RESULT=new StreeCONSTRUCTOR(i,s);:}
+				;
+
+destructor ::= NOT_UNARY IDENTIFIER:i FUNCTION_CALL LA insts:s RA {:RESULT=new StreeDESTRUCTOR(i,s);:}
+			   ;
+
+
+function_call ::= functioncall_without_args:e {:RESULT=e;:}
+				  |functioncall_with_args:e {:RESULT=e;:}
+			 	  ;
+
+functioncall_without_args ::= IDENTIFIER:i FUNCTION_CALL SEMIC {:RESULT=new StreeFUNCTIONCALL(i);:}
+							  ;
+
+functioncall_with_args ::= IDENTIFIER:i LPAR exprs:e RPAR SEMIC {:RESULT=new StreeFUNCTIONCALL(i,e);:}
+						   ;
+
+main_function ::= PROCEDURE MAIN LPAR list_args:e1 RPAR LA insts:s RA {:RESULT=new StreePROCEDURE(e1,new StreeFUNCTIONBODY(s));:}
+				  ;
+
+
+// NOT DONE YET
+
+
+unary_expr ::= OR_BIT expr:e {:RESULT=new StreeORBIT(e);:}
+				;
+
+type ::= 
+			type_pointer_simple
+			|type_pointer
+			;
+
+type_pointer_simple ::= 
+								type_simple:e {: RESULT=e;:}
+								|type_variable:e {: RESULT=e;:}
+								|type_list:e {: RESULT=e;:}
+								|type_pointer:e {: RESULT=e;:}
+								;
+
+
+
+type_variable   ::=
+						VARIABLE_TYPE:e IDENTIFIER:i {: :}
+						;
+
+
+
+type_structure ::=
+						STRUCTURE LA set_of_declars RA SEMIC
+						;
+

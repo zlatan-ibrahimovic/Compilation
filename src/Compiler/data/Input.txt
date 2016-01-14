@@ -1,0 +1,5 @@
+function add(i: integer, j:integer): integer{
+	 return i+j;
+}
+
+add(1,2);

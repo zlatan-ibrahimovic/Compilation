@@ -1,0 +1,79 @@
+		__________________________________
+		
+		    TYPES, VERIFICATION DE TYPE
+		__________________________________
+
+
+a°) Environnement ou Tables de symboles.
+    -----------------------------------
+
+    On peut imaginer les 
+    NOM				TYPE			PLACE MEMOIRE			VALEUR
+    ______________________________________________________________________________________________________
+		
+
+
+
+
+		pour gérer les variables, on utilise des arbres binaires persistants.
+
+		
+b°) Les types 
+
+   
+
+types simples :								types complexes:
+      - char  								      - structures
+      -	int 								      - fonctions
+      -	float								      - tuples
+      -	variable de type						      - pointeurs
+      - Si T1 et T2 sont des types 					      - adresses
+      	T1 ----> T2 est un type
+
+	T1 x T2 est un type							Classe
+
+
+
+	   TYPE: 
+
+
+	   descls := deels, deel
+	    ! deel;
+
+	  deel := type:t variable:v
+	       	 (: env.add.Symbole(v,t) :)
+
+
+
+
+
+		 Surcharge, Polymorphisme 
+________________________________________________________________________________________________________________________________________________________________________________________________________
+
+
+
+						-----------------------------------------
+						
+								POLYMORPHISME
+
+						-----------------------------------------
+		 
+
+
+
+		Même identificateur , plusieurs types.
+		- Surcharge : un même élément typable peut dénoter plusieurs éléments distincts à la fois
+
+
+
+
+
+						
+								
+
+
+  Coercition : Règle pour modifier automatiquement et implicitement le type 
+  -----------
+
+		 
+		 Ex: c, c++, Java, Lisp.

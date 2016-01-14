@@ -1,0 +1,116 @@
+# Initializing parser
+# Current Symbol is #62
+# Shift under term #62 to state #11
+# Current token is #67
+# Shift under term #67 to state #15
+# Current token is #8
+# Reduce with prod #82 [NT=18, SZ=1]
+# Reduce rule: top state 11, lhs sym 18 -> state 14
+# Goto state #14
+# Shift under term #8 to state #16
+# Current token is #67
+# Shift under term #67 to state #15
+# Current token is #41
+# Reduce with prod #82 [NT=18, SZ=1]
+# Reduce rule: top state 16, lhs sym 18 -> state 122
+# Goto state #122
+# Shift under term #41 to state #128
+# Current token is #43
+# Shift under term #43 to state #22
+# Current token is #61
+# Reduce with prod #65 [NT=40, SZ=1]
+# Reduce rule: top state 128, lhs sym 40 -> state 113
+# Goto state #113
+# Reduce with prod #62 [NT=25, SZ=3]
+# Reduce rule: top state 16, lhs sym 25 -> state 188
+# Goto state #188
+# Shift under term #61 to state #189
+# Current token is #67
+# Shift under term #67 to state #15
+# Current token is #41
+# Reduce with prod #82 [NT=18, SZ=1]
+# Reduce rule: top state 189, lhs sym 18 -> state 122
+# Goto state #122
+# Shift under term #41 to state #128
+# Current token is #43
+# Shift under term #43 to state #22
+# Current token is #9
+# Reduce with prod #65 [NT=40, SZ=1]
+# Reduce rule: top state 128, lhs sym 40 -> state 113
+# Goto state #113
+# Reduce with prod #62 [NT=25, SZ=3]
+# Reduce rule: top state 189, lhs sym 25 -> state 188
+# Goto state #188
+# Reduce with prod #83 [NT=9, SZ=1]
+# Reduce rule: top state 189, lhs sym 9 -> state 190
+# Goto state #190
+# Reduce with prod #84 [NT=9, SZ=3]
+# Reduce rule: top state 16, lhs sym 9 -> state 187
+# Goto state #187
+# Shift under term #9 to state #191
+# Current token is #41
+# Shift under term #41 to state #192
+# Current token is #43
+# Shift under term #43 to state #22
+# Current token is #6
+# Reduce with prod #65 [NT=40, SZ=1]
+# Reduce rule: top state 192, lhs sym 40 -> state 193
+# Goto state #193
+# Shift under term #6 to state #194
+# Current token is #52
+# Shift under term #52 to state #37
+# Current token is #67
+# Shift under term #67 to state #60
+# Current token is #33
+# Reduce with prod #74 [NT=12, SZ=1]
+# Reduce rule: top state 37, lhs sym 12 -> state 51
+# Goto state #51
+# Reduce with prod #56 [NT=23, SZ=1]
+# Reduce rule: top state 37, lhs sym 23 -> state 173
+# Goto state #173
+# Shift under term #33 to state #65
+# Current token is #67
+# Shift under term #67 to state #60
+# Current token is #40
+# Reduce with prod #74 [NT=12, SZ=1]
+# Reduce rule: top state 65, lhs sym 12 -> state 51
+# Goto state #51
+# Reduce with prod #56 [NT=23, SZ=1]
+# Reduce rule: top state 65, lhs sym 23 -> state 99
+# Goto state #99
+# Reduce with prod #33 [NT=23, SZ=3]
+# Reduce rule: top state 37, lhs sym 23 -> state 173
+# Goto state #173
+# Shift under term #40 to state #174
+# Current token is #7
+# Reduce with prod #89 [NT=42, SZ=3]
+# Reduce rule: top state 194, lhs sym 42 -> state 43
+# Goto state #43
+# Reduce with prod #17 [NT=6, SZ=1]
+# Reduce rule: top state 194, lhs sym 6 -> state 33
+# Goto state #33
+# Reduce with prod #20 [NT=5, SZ=1]
+# Reduce rule: top state 194, lhs sym 5 -> state 195
+# Goto state #195
+# Shift under term #7 to state #196
+# Current token is #67
+# Reduce with prod #88 [NT=47, SZ=10]
+# Reduce rule: top state 0, lhs sym 47 -> state 7
+# Goto state #7
+# Reduce with prod #86 [NT=41, SZ=1]
+# Reduce rule: top state 0, lhs sym 41 -> state 1
+# Goto state #1
+# Reduce with prod #7 [NT=3, SZ=1]
+# Reduce rule: top state 0, lhs sym 3 -> state 12
+# Goto state #12
+# Shift under term #67 to state #10
+# Current token is #8
+syntax error in 5(3)
+# Attempting error recovery
+# Finding recovery state on stack
+# Pop stack by one, state was # 10
+# Pop stack by one, state was # 12
+# Pop stack by one, state was # 0
+# No recovery state found on stack
+# Error recovery fails
+error in line 4: Couldn't repair and continue parse

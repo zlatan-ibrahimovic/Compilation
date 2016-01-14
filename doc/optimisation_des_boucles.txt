@@ -1,0 +1,36 @@
+
+		*************************************************
+
+			OPTIMISATION DES BOUCLES
+
+		*************************************************
+		
+
+
+
+
+	- Il y a un point d'entrée E qui domine tous les noeuds N de la boucle.
+	- Il y a au moins un chemin d'un noeud N vers E.
+
+
+
+PS: deux boucles peuvent être disjointes, ou avec une intersection non vide : ici on a deux cas
+    	 	 	      		     	      		       	    1) soit une est contenue dans l'autre
+									    2) soit elle partage la même tête.
+
+
+
+
+	GRAPHE DES DOMINANTS:
+	--------------------
+	
+	x domine y si tout chemin venant de x0 à y passe par x                x0
+	  	      	   	  	       	   	     		      !
+									      !	
+									      x
+									      !
+									      !	
+									      y
+	.Dominant(x0) = (x0)
+	.D(x) = (x) U (intersection D(xi))
+					xi est l'origine d'un arc d'extrêmité x.

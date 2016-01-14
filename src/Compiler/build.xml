@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+11 Novembre 2014 - 23:31
+
+Projet du compilation
+
+LABOUARDY                                                              
+====================================================================== -->
+<project name="Lexer project" default="default">
+  <property name="LIB" location="lib" />
+  <property name="SRC" location="src" />
+  <property name="BIN" location="bin" />
+  <property name="PARSER" location="parser" />
+  <property name="LEXER" location="lexer" />
+  <property name="data.dir" location="data" />
+
+  <description>
+    Compilation du projet
+  </description>
+  
+  <!-- ================================= 
+       target: all              
+       ================================= -->
+  <target name="all" depends="calc" description="Execution du projet">
+    <java 
+		classname="Main"
+	   classpath=".:${BIN}:${LIB}/java-cup-11a-runtime.jar"
+		output="${data.dir}/Output.txt" error="${data.dir}/Output.err">
+      <arg value="${data.dir}/Input.txt"/>
+    </java>    
+  </target>
+  <!-- ================================= 
+       target: clean             
+       ================================= -->
+  <target name="clean" 
+	  description="Efface toutes les cibles">
+    <delete dir="${BIN}"/>
+	 <delete>
+       <fileset dir="." includes="*~"/>
+  	 </delete>
+	 <echo message="les répertoires ont été nettoyé avec succés"/>
+	 </target>
+	<!-- ================================= 
+       target: test             
+       ================================= -->
+  <target name="test" 
+	  description="test du projet">
+     <exec executable="more">
+		 <arg value="data/Input.txt"/>
+	  </exec>
+  </target>
+  <!-- ================================= 
+       target: calc              
+       ================================= -->
+  <target name="calc" depends="parser, lexer" description="Compilation du projet">
+    <mkdir dir="${BIN}"/>
+    <javac 
+		srcdir="${SRC}"
+		destdir="${BIN}" 
+		classpath="${LIB}/java-cup-11a-runtime.jar" 
+		debug="on" 
+    />	 
+  </target>
+  
+  <!-- =================================
+       target: lexer
+       ================================= -->
+  <target name="lexer">
+    <taskdef name="jflex" classname="JFlex.anttask.JFlexTask">
+      <classpath location="${LIB}/JFlex.jar" />
+    </taskdef>
+    <jflex 
+		file="${LEXER}/lexer.jflex" 
+		destdir="${SRC}"
+	 />
+  </target>
+  
+  <!-- ================================= 
+       target: parser              
+       ================================= -->
+  <target name="parser" description="Compilation du parseur">
+    <taskdef name="cup" classname="java_cup.anttask.CUPTask">
+      <classpath location="${LIB}/java-cup-11a.jar" />
+    </taskdef>
+    <cup 
+		srcfile="${PARSER}/parser.cup"
+		destdir="${SRC}"
+		parser="CompilerParser"
+		symbols="CompilerSymbol"
+		dump_grammar="true" 
+    />
+  </target>
+</project>
